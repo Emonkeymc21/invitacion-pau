@@ -15,14 +15,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1. Leemos el body UNA SOLA VEZ al inicio
     const body = await request.json();
     const userMessage = body.message || "Hola";
 
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Probar el modelo de Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    // Usamos el modelo activo para nuevas cuentas en v1beta
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     const systemInstruction = `
     Sos un acompañante espiritual virtual inspirado en la pedagogía de San Ignacio de Loyola y la tradición ignaciana de discernimiento espiritual.
