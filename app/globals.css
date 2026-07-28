@@ -1,0 +1,455 @@
+:root {
+  --bg: #faf5f0;
+  --card: rgba(255, 255, 255, 0.93);
+  --text: #3b232a;
+  --muted: #7d5a65;
+  --accent: #9a2b4b; /* Borgoña cálido */
+  --accent-gold: #c59b27; /* Dorado noble */
+  --accent-soft: #fbebf0;
+  --line: rgba(154, 43, 75, 0.16);
+  --shadow: 0 20px 50px rgba(125, 35, 60, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top, rgba(251, 235, 240, 0.85), transparent 40%),
+    linear-gradient(180deg, #f7eae1 0%, #faf5f0 50%, #f4e8e1 100%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.page-shell {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 56px;
+}
+
+.landing-card,
+.hero-card,
+.invitation-card,
+.side-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.landing-card,
+.hero-card {
+  padding: 36px;
+}
+
+.hero-card {
+  margin-bottom: 24px;
+}
+
+.teaser-card {
+  text-align: center;
+}
+
+.teaser-copy {
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 28px 0 22px;
+}
+
+.countdown-box {
+  padding: 20px 12px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(251, 235, 240, 0.9));
+  border: 1px solid rgba(154, 43, 75, 0.18);
+  box-shadow: 0 4px 15px rgba(154, 43, 75, 0.05);
+}
+
+.countdown-box span {
+  display: block;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.countdown-box small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.blur-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  max-width: 480px;
+  margin: 0 auto 16px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  color: #701c35;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2.3rem);
+  color: #83223e;
+}
+
+h3 {
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+  color: #83223e;
+}
+
+p, li, blockquote {
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.hero-copy, .muted-copy {
+  color: var(--muted);
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  border: 0;
+  background: linear-gradient(135deg, #9a2b4b 0%, #701c35 100%);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(154, 43, 75, 0.25);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(154, 43, 75, 0.35);
+}
+
+.action-button.secondary {
+  background: linear-gradient(135deg, #5c2033 0%, #3b1220 100%);
+  box-shadow: 0 8px 20px rgba(92, 32, 51, 0.25);
+}
+
+button:disabled,
+.action-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.access-form {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+  margin: 24px auto 0;
+  text-align: left;
+}
+
+.access-form label {
+  font-weight: 700;
+  color: #701c35;
+}
+
+.access-form input {
+  width: 100%;
+  border: 1px solid rgba(154, 43, 75, 0.25);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 14px 16px;
+  outline: none;
+  font-size: 1rem;
+}
+
+.access-form input:focus {
+  border-color: #9a2b4b;
+  box-shadow: 0 0 0 4px rgba(154, 43, 75, 0.15);
+}
+
+.error-box {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fde8e8;
+  color: #9b1c1c;
+  border: 1px solid #f8b4b4;
+}
+
+.invitation-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 24px;
+  align-items: start;
+}
+
+.invitation-card {
+  padding: 36px;
+}
+
+.invitation-header {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.invitation-header blockquote {
+  margin: 18px 0 0;
+  padding-left: 18px;
+  border-left: 4px solid var(--accent-gold);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.verse-ref {
+  text-align: right;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.welcome-box {
+  margin: 28px 0 20px;
+  padding: 22px 24px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(251, 235, 240, 0.95), rgba(255, 255, 255, 0.98));
+  border: 1px solid rgba(154, 43, 75, 0.2);
+  text-align: center;
+}
+
+.welcome-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.welcome-name {
+  margin: 6px 0 0;
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: #701c35;
+}
+
+.body-copy {
+  margin: 0 0 16px;
+}
+
+.content-section, .content-block {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+ul {
+  padding-left: 22px;
+  margin: 0;
+}
+
+li + li {
+  margin-top: 10px;
+}
+
+.block-quote, .note-box, .prayer-box {
+  border-radius: 20px;
+  padding: 16px 18px;
+  margin-top: 18px;
+}
+
+.block-quote {
+  background: #fbebf0;
+  color: #701c35;
+  font-style: italic;
+  border-left: 3px solid #9a2b4b;
+}
+
+.note-box {
+  background: #fbf4e8;
+  border: 1px solid #f3e2c6;
+  color: #634310;
+}
+
+.prayer-box {
+  background: #ffffff;
+  border: 1px solid #f3d0d9;
+  color: #701c35;
+}
+
+.prayer-box p {
+  margin: 0;
+}
+
+.final-prayer {
+  padding: 24px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #ffffff, #fbebf0);
+  border: 1px solid #f3d0d9;
+  text-align: center;
+}
+
+.closing-title {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #701c35;
+}
+
+.side-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.side-card {
+  padding: 24px;
+}
+
+.sticky-card {
+  position: sticky;
+  top: 24px;
+  background: linear-gradient(135deg, #ffffff, #faf0e6);
+}
+
+.featured-quote {
+  font-style: italic;
+  color: #83223e;
+  text-align: center;
+  margin: 0 0 12px;
+}
+
+.status-pill {
+  display: inline-flex;
+  margin-top: 16px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.status-pill.open {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-pill.closed {
+  background: #fbebf0;
+  color: #9a2b4b;
+}
+
+.preview-pill {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  background: #fff8e1;
+  color: #b78103;
+  border: 1px solid #ffe082;
+}
+
+.actions-card {
+  display: grid;
+  gap: 12px;
+}
+
+.music-fab {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 120;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid #f3d0d9;
+  background: rgba(255, 255, 255, 0.94);
+  color: #83223e;
+  box-shadow: 0 10px 25px rgba(154, 43, 75, 0.18);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.music-fab:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+}
+
+.music-fab-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #fbebf0;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 980px) {
+  .invitation-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .countdown-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .page-shell {
+    width: min(100% - 20px, 1000px);
+    padding-top: 64px;
+  }
+
+  .landing-card, .hero-card, .invitation-card, .side-card {
+    padding: 22px;
+  }
+}
