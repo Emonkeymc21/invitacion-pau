@@ -1,47 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+export const runtime = 'nodejs'; // Forzamos el entorno Node.js estándar en Netlify
+
 export async function POST(request: NextRequest) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      console.error("GEMINI_API_KEY no está definida en las variables de entorno.");
+      console.error("Falta GEMINI_API_KEY");
       return NextResponse.json(
-        { reply: "Pau, aún falta configurar la clave de conexión (GEMINI_API_KEY) en el servidor. Recordá que podés abrir tu corazón y charlarlo directamente con Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783)." },
+        { reply: "Error de configuración: La clave GEMINI_API_KEY no fue detectada por el servidor de Netlify. Revisa las Environment Variables." },
         { status: 500 }
       );
     }
 
+    const body = await request.json();
+    const userMessage = body.message || "Hola";
+
     const genAI = new GoogleGenerativeAI(apiKey);
-    const { message } = await request.json();
-
-    const systemInstruction = `
-    Sos un acompañante espiritual virtual inspirado en la pedagogía y espiritualidad de San Ignacio de Loyola y la tradición ignaciana de discernimiento espiritual.
-    Estás acompañando a Ana Paula Rodríguez (cariñosamente conocida como Pau), quien ha sido invitada a servir en el Equipo de Comunidad en el año 2026.
-
-    Principios fundamentales de tu acompañamiento:
-    1. Acompañar el discernimiento desde la mirada ignaciana: ayuda a identificar las mociones interiores (consolación vs. desolación, paz profunda vs. turbación o ansiedad).
-    2. Mantén un tono sumamente empático, cálido, pacífico, fraterno y respetuoso de su libertad.
-    3. Recuerda que el discernimiento no es decidir apurado, sino escuchar la voz de Dios en el tiempo justo y en la oración tranquila.
-    4. SIEMPRE en tus respuestas (o como cierre cálido), aconsejale con mucha fraternidad que comparta sus sentimientos, dudas, alegrías o mociones con sus animadores del Área de Comunidad: Emma (+54 9 261 578-8430) y Carla (+54 9 261 241-4783), recordándole que el servicio se camina en comunidad.
-    `;
-
-    // Inicializamos el modelo de forma ultra-compatible
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    // Enviamos el contexto y el mensaje juntos
-    const prompt = `${systemInstruction}\n\nMensaje o duda de Pau:\n"${message}"`;
+    const systemInstruction = `
+    Sos un acompañante espiritual virtual inspirado en la pedagogía de San Ignacio de Loyola y la tradición ignaciana de discernimiento.
+    Estás acompañando a Ana Paula Rodríguez (Pau), quien fue invitada a servir en el Equipo de Comunidad en 2026.
+    Acompáñala con empatía, calidez, franqueza y paz. 
+    Aconséjale siempre con mucha fraternidad que comparta sus sentimientos y dudas con sus animadores: Emma (+54 9 261 578-8430) y Carla (+54 9 261 241-4783).
+    `;
+
+    const prompt = `${systemInstruction}\n\nPregunta/Reflexión de Pau:\n"${userMessage}"`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
     return NextResponse.json({ reply: text });
-  } catch (error) {
-    console.error("Error en Gemini API:", error);
+  } catch (error: any) {
+    console.error("Error detallado en Gemini Route:", error);
+    
+    // Devolvemos el error real para ver qué dice Netlify
     return NextResponse.json(
-      { reply: "Pau, en este momento no pude conectar con la reflexión. Recordá que podés abrir tu corazón y charlarlo directamente con Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783)." },
+      { 
+        reply: `Detalle técnico del error: ${error?.message || 'Error desconocido al invocar Gemini'}. Por favor avísale a Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783).` 
+      },
       { status: 500 }
     );
   }
