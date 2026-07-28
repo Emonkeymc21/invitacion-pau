@@ -51,7 +51,7 @@ export default function DiscernmentAssistant() {
   return (
     <div className="content-section" style={{ marginTop: '32px' }}>
       <h3 style={{ color: '#701c35', textAlign: 'center' }}>🕊️ Espacio de Discernimiento Ignaciano (con IA)</h3>
-      <p className="body-copy" style={{ textStyle: 'italic', fontSize: '0.95rem', textAlign: 'center' }}>
+      <p className="body-copy" style={{ fontStyle: 'italic', fontSize: '0.95rem', textAlign: 'center' }}>
         “Examinar los movimientos del alma con paz y libertad”
       </p>
 
