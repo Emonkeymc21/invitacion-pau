@@ -16,7 +16,7 @@ export const invitations: Record<string, InvitationConfig> = {
     nombre: 'Ana Paula Rodríguez',
     nickname: 'Pau',
     password: 'PAU2026',
-    unlockAtArgentina: '2026-07-28T20:30:00-03:00', // Desbloqueo hoy 28/07/2026 a las 20:30 hs
+    unlockAtArgentina: '2026-07-28T20:30:00-03:00',
     meetUrl: 'https://meet.google.com/tu-codigo-aqui',
     title: 'DISCERNIMIENTO Y LLAMADO AL SERVICIO',
     verse:
@@ -41,6 +41,7 @@ export type InvitationContent = {
   intro: string[];
   objetivos: string[];
   actividades: string[];
+  videoUrl?: string;
   bloques: Array<{
     titulo: string;
     lema?: string;
@@ -50,6 +51,11 @@ export type InvitationContent = {
     oracion?: string[];
   }>;
   cierre: string[];
+  animadores: Array<{
+    nombre: string;
+    telefono: string;
+    waLink: string;
+  }>;
 };
 
 export const invitationContent: InvitationContent = {
@@ -70,6 +76,7 @@ export const invitationContent: InvitationContent = {
     'Guiar el encuentro de Comunidad: preparar el salón, armar el altar, cuidar los momentos, el clima de oración y el cierre de cada jornada.',
     'Misas Peregrinas: coordinar y convocar a los peregrinos para las lecturas, ofrendas y coro los terceros domingos de cada mes en la Pquia. Virgen Niña.'
   ],
+  videoUrl: 'https://www.youtube.com/embed/SVpJcYsUJwI',
   bloques: [
     {
       titulo: 'BLOQUE Nº1: DISPONER EL CORAZÓN',
@@ -127,6 +134,18 @@ export const invitationContent: InvitationContent = {
     'Que mi respuesta nazca del deseo sincero de seguir tus pasos.',
     'Amén.',
     'CONTACTO DE LOS ANIMADORES DEL ÁREA DE COMUNIDAD'
+  ],
+  animadores: [
+    {
+      nombre: 'Emma',
+      telefono: '+54 9 261 578-8430',
+      waLink: 'https://wa.me/5492615788430?text=Hola%20Emma!%20Estuve%20leyendo%20la%20invitaci%C3%B3n%20al%20servicio%20y%20quer%C3%ADa%20hablar%20con%20vos%20%F0%9F%92%95'
+    },
+    {
+      nombre: 'Carla',
+      telefono: '+54 9 261 241-4783',
+      waLink: 'https://wa.me/5492612414783?text=Hola%20Carla!%20Estuve%20leyendo%20la%20invitaci%C3%B3n%20al%20servicio%20y%20quer%C3%ADa%20hablar%20con%20vos%20%F0%9F%92%95'
+    }
   ]
 };
 

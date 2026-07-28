@@ -20,6 +20,7 @@ type ApiResponse = {
     intro: string[];
     objetivos: string[];
     actividades: string[];
+    videoUrl?: string;
     bloques: Array<{
       titulo: string;
       lema?: string;
@@ -29,6 +30,11 @@ type ApiResponse = {
       oracion?: string[];
     }>;
     cierre: string[];
+    animadores?: Array<{
+      nombre: string;
+      telefono: string;
+      waLink: string;
+    }>;
   };
 };
 
@@ -63,7 +69,7 @@ export default function InviteClient({
   publicInvitation: PublicInvitation;
 }) {
   const searchParams = useSearchParams();
-  const isPreview = searchParams.get('preview') === 'true'; // Modo Creador
+  const isPreview = searchParams.get('preview') === 'true';
 
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -165,11 +171,11 @@ export default function InviteClient({
     <main className="page-shell">
       {isPreview ? (
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          <span className="preview-pill">👁️ MODO CREADOR ACTIVO (Previsualización Desbloqueada)</span>
+          <span className="preview-pill">👁️ MODO CREADOR ACTIVO</span>
         </div>
       ) : null}
 
-      {/* Tarjeta Teaser / Cuenta Regresiva */}
+      {/* Seccion Teaser */}
       <section className="hero-card teaser-card">
         <p className="eyebrow">Un llamado en el momento justo</p>
         <h1>Querida {displayName}, Dios te llama a servir ✨</h1>
@@ -212,12 +218,6 @@ export default function InviteClient({
             ? '✨ ¡Ya se encuentra disponible tu invitación!'
             : '⏳ Se habilita hoy a las 20:30 hs'}
         </div>
-
-        <div style={{ marginTop: '24px' }}>
-          <p className="featured-quote">
-            “Dios no elige a los preparados, prepara con amor a los elegidos.”
-          </p>
-        </div>
       </section>
 
       {/* Formulario de Contraseña */}
@@ -246,7 +246,7 @@ export default function InviteClient({
         </section>
       ) : null}
 
-      {/* Carta e Invitación Completa */}
+      {/* Contenido de la Invitación */}
       {payload ? (
         <section className="invitation-layout">
           <article className="invitation-card">
@@ -267,6 +267,22 @@ export default function InviteClient({
                 {paragraph}
               </p>
             ))}
+
+            {/* Video de The Chosen */}
+            {payload.content.videoUrl ? (
+              <div style={{ marginTop: '28px', marginBottom: '28px', textAlign: 'center' }}>
+                <p className="eyebrow" style={{ marginBottom: '12px' }}>🎬 Reflexión: ¿Quieres seguirme?</p>
+                <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '18px', border: '1px solid #f3d0d9' }}>
+                  <iframe
+                    src={payload.content.videoUrl}
+                    title="¿Quieres seguirme? (The Chosen Escena)"
+                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            ) : null}
 
             <section className="content-section">
               <h3>Objetivos del Servicio</h3>
@@ -315,6 +331,24 @@ export default function InviteClient({
                   {line}
                 </p>
               ))}
+
+              {/* Botones Directos de WhatsApp a los Animadores */}
+              {payload.content.animadores?.length ? (
+                <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {payload.content.animadores.map((animador) => (
+                    <a
+                      key={animador.nombre}
+                      href={animador.waLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="action-button"
+                      style={{ background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', textDecoration: 'none' }}
+                    >
+                      💬 Hablar con {animador.nombre}
+                    </a>
+                  ))}
+                </div>
+              ) : null}
             </section>
           </article>
 
