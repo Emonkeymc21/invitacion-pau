@@ -8,9 +8,8 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      console.error("Falta GEMINI_API_KEY en Netlify");
       return NextResponse.json(
-        { reply: "Error de configuración: La clave GEMINI_API_KEY no fue detectada en Netlify." },
+        { reply: "Pau, en este momento no pudimos activar el espacio de discernimiento. Recordá que podés charlarlo directamente con Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783)." },
         { status: 500 }
       );
     }
@@ -20,35 +19,45 @@ export async function POST(request: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Usamos el modelo activo para nuevas cuentas en v1beta
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    // Lista de modelos ordenados por disponibilidad/cuota
+    const modelNames = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash'];
+    let text = '';
+    let lastError = null;
 
     const systemInstruction = `
-    Sos un acompañante espiritual virtual inspirado en la pedagogía de San Ignacio de Loyola y la tradición ignaciana de discernimiento espiritual.
-    Estás acompañando a Ana Paula Rodríguez (cariñosamente conocida como Pau), quien ha sido invitada a servir en el Equipo de Comunidad en 2026.
-
-    Principios fundamentales de tu acompañamiento:
-    1. Acompañar el discernimiento desde la mirada ignaciana: ayuda a identificar las mociones interiores (consolación vs. desolación, paz profunda vs. turbación o ansiedad).
-    2. Mantén un tono sumamente empático, cálido, pacífico, fraterno y respetuoso de su libertad.
-    3. Recuerda que el discernimiento no es decidir apurado, sino escuchar la voz de Dios en el tiempo justo y en la oración tranquila.
-    4. SIEMPRE en tus respuestas (o como cierre cálido), aconsejale con mucha fraternidad que comparta sus sentimientos, dudas, alegrías o mociones con sus animadores del Área de Comunidad: Emma (+54 9 261 578-8430) y Carla (+54 9 261 241-4783), recordándole que el servicio se camina en comunidad.
+    Sos un acompañante espiritual virtual inspirado en la pedagogía y espiritualidad de San Ignacio de Loyola.
+    Estás acompañando a Ana Paula Rodríguez (Pau), quien ha sido invitada a servir en el Equipo de Comunidad en 2026.
+    Acompáñala con empatía, calidez, franqueza y paz. 
+    Aconséjale siempre con mucha fraternidad que comparta sus sentimientos y dudas con sus animadores del Área de Comunidad: Emma (+54 9 261 578-8430) y Carla (+54 9 261 241-4783).
     `;
 
-    const prompt = `${systemInstruction}\n\nMensaje o consulta de Pau:\n"${userMessage}"`;
+    const prompt = `${systemInstruction}\n\nConsulta o inquietud de Pau:\n"${userMessage}"`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    for (const modelName of modelNames) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        text = response.text();
+        if (text) break;
+      } catch (err) {
+        lastError = err;
+        console.warn(`Fallo con el modelo ${modelName}, intentando siguiente...`);
+      }
+    }
+
+    if (!text) {
+      throw lastError || new Error("No se pudo obtener respuesta de ningún modelo.");
+    }
 
     return NextResponse.json({ reply: text });
   } catch (error: any) {
-    console.error("Error en Gemini API:", error);
-    
+    console.error("Error final en Gemini Route:", error);
     return NextResponse.json(
       { 
-        reply: `Detalle técnico del error: ${error?.message || 'Error al conectar con la IA'}. Por favor avísale a Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783).` 
+        reply: "Pau, el espacio de reflexión está en una pausa momentánea. Podés abrir tu corazón y charlarlo directamente con tus animadores: Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783) 💕." 
       },
-      { status: 500 }
+      { status: 200 }
     );
   }
 }

@@ -14,7 +14,6 @@ type ApiResponse = {
     verseRef: string;
     unlockAtArgentina: string;
     unlockAtArgentinaFormatted: string;
-    meetUrl: string;
   };
   content: {
     intro: string[];
@@ -45,55 +44,15 @@ type PublicInvitation = {
   unlockAtArgentinaFormatted: string;
 };
 
-/* --- Componente Auxiliar: Narrador de Carta por Voz --- */
-function AudioNarrator({ text }: { text: string }) {
-  const [speaking, setSpeaking] = useState(false);
-
-  function toggleSpeech() {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      alert('Tu navegador no soporta la función de voz.');
-      return;
-    }
-
-    if (speaking) {
-      window.speechSynthesis.cancel();
-      setSpeaking(false);
-    } else {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'es-AR';
-      utterance.rate = 0.9; // Tono pausado y cálido
-
-      utterance.onend = () => setSpeaking(false);
-      utterance.onerror = () => setSpeaking(false);
-
-      window.speechSynthesis.speak(utterance);
-      setSpeaking(true);
-    }
-  }
-
-  return (
-    <div style={{ textAlign: 'center', margin: '20px 0' }}>
-      <button
-        type="button"
-        onClick={toggleSpeech}
-        className="action-button secondary"
-        style={{ fontSize: '0.9rem', padding: '10px 20px' }}
-      >
-        {speaking ? '⏸️ Pausar Narración' : '🎙️ Escuchar la Carta Narrada por IA'}
-      </button>
-    </div>
-  );
-}
-
-/* --- Componente Auxiliar: Acompañante de Discernimiento (Gemini) --- */
-function DiscernmentAssistant() {
+/* --- Widget Flotante de IA de Discernimiento --- */
+function FloatingDiscernmentWidget() {
+  const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'model'; text: string }>>([
     {
       role: 'model',
-      text: '¡Hola, Pau! 🕊️ Soy tu espacio de acompañamiento espiritual. Si sentís alguna duda, inquietud o alegría sobre este llamado al servicio, podés escribirme para que lo reflexionemos juntos a la luz de San Ignacio.'
+      text: '¡Hola, Pau! 🕊️ Soy tu espacio de acompañamiento. Si sentís alguna duda, inquietud o alegría sobre este llamado a servir, podés escribirme acá para que lo reflexionemos juntos a la luz de San Ignacio.'
     }
   ]);
 
@@ -107,15 +66,10 @@ function DiscernmentAssistant() {
     setLoading(true);
 
     try {
-      const historyFormatted = messages.map((m) => ({
-        role: m.role,
-        parts: [{ text: m.text }]
-      }));
-
       const res = await fetch('/api/discernment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, history: historyFormatted })
+        body: JSON.stringify({ message: userMessage })
       });
 
       const data = await res.json();
@@ -125,7 +79,7 @@ function DiscernmentAssistant() {
         ...prev,
         {
           role: 'model',
-          text: 'Hubo un inconveniente al conectar. No dudes en consultarlo en oración o charlarlo directamente con Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783) 💕.'
+          text: 'Hubo un inconveniente al conectar. No dudes en consultarlo en oración o charlarlo directo con Emma o Carla 💕.'
         }
       ]);
     } finally {
@@ -134,71 +88,147 @@ function DiscernmentAssistant() {
   }
 
   return (
-    <div className="content-section" style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1px solid var(--line)' }}>
-      <h3 style={{ color: '#701c35', textAlign: 'center' }}>🕊️ Espacio de Discernimiento Ignaciano</h3>
-      <p className="body-copy" style={{ fontStyle: 'italic', fontSize: '0.95rem', textAlign: 'center', marginBottom: '18px' }}>
-        “Examinar las mociones del alma con paz, libertad y oración”
-      </p>
-
-      <div
+    <>
+      {/* Botón Flotante */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
         style={{
-          background: '#ffffff',
-          borderRadius: '20px',
-          padding: '18px',
-          border: '1px solid #f3d0d9',
-          maxHeight: '350px',
-          overflowY: 'auto',
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          zIndex: 9999,
+          background: 'linear-gradient(135deg, #701c35 0%, #9a2b4b 100%)',
+          color: '#ffffff',
+          border: 'none',
+          borderRadius: '999px',
+          padding: '14px 20px',
+          boxShadow: '0 8px 24px rgba(112, 28, 53, 0.4)',
+          fontWeight: 600,
+          fontSize: '0.95rem',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          marginBottom: '14px',
-          boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.03)'
+          alignItems: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent'
         }}
       >
-        {messages.map((m, i) => (
+        {isOpen ? '✕ Cerrar Chat' : '🕊️ Discernir con IA'}
+      </button>
+
+      {/* Ventana Emergente Modal Optimizado */}
+      {isOpen ? (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '80px',
+            right: '16px',
+            left: '16px',
+            maxWidth: '420px',
+            margin: '0 auto',
+            height: '480px',
+            maxHeight: '75vh',
+            background: '#ffffff',
+            borderRadius: '24px',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.25)',
+            border: '1px solid #f3d0d9',
+            zIndex: 9998,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}
+        >
           <div
-            key={i}
             style={{
-              alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-              background: m.role === 'user' ? '#9a2b4b' : '#fbebf0',
-              color: m.role === 'user' ? '#ffffff' : '#3b232a',
-              padding: '12px 16px',
-              borderRadius: '16px',
-              maxWidth: '85%',
-              fontSize: '0.96rem',
-              lineHeight: '1.5'
+              padding: '14px 18px',
+              background: '#fbebf0',
+              borderBottom: '1px solid #f3d0d9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
             }}
           >
-            {m.text}
+            <div>
+              <strong style={{ color: '#701c35', fontSize: '0.95rem', display: 'block' }}>🕊️ Acompañamiento Ignaciano</strong>
+              <small style={{ color: '#7d5a65', fontSize: '0.78rem' }}>En todo amar y servir</small>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              style={{ background: 'none', border: 'none', fontSize: '1.2rem', color: '#701c35', cursor: 'pointer' }}
+            >
+              ✕
+            </button>
           </div>
-        ))}
-        {loading ? (
-          <div style={{ alignSelf: 'flex-start', background: '#fbebf0', padding: '10px 14px', borderRadius: '16px', fontStyle: 'italic', color: '#7d5a65', fontSize: '0.9rem' }}>
-            Reflexionando en oración con Gemini... 🕊️
-          </div>
-        ) : null}
-      </div>
 
-      <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px' }}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Escribí lo que sentís o tus dudas sobre el servicio..."
-          style={{
-            flex: 1,
-            padding: '12px 18px',
-            borderRadius: '999px',
-            border: '1px solid rgba(154, 43, 75, 0.25)',
-            outline: 'none',
-            fontSize: '0.95rem'
-          }}
-        />
-        <button type="submit" className="action-button" disabled={loading || !input.trim()}>
-          Preguntar
-        </button>
-      </form>
-    </div>
+          <div
+            style={{
+              flex: 1,
+              padding: '14px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px'
+            }}
+          >
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                style={{
+                  alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                  background: m.role === 'user' ? '#9a2b4b' : '#fbebf0',
+                  color: m.role === 'user' ? '#ffffff' : '#3b232a',
+                  padding: '10px 14px',
+                  borderRadius: '16px',
+                  maxWidth: '88%',
+                  fontSize: '0.9rem',
+                  lineHeight: '1.45'
+                }}
+              >
+                {m.text}
+              </div>
+            ))}
+            {loading ? (
+              <div style={{ alignSelf: 'flex-start', background: '#fbebf0', padding: '8px 12px', borderRadius: '14px', fontStyle: 'italic', color: '#7d5a65', fontSize: '0.85rem' }}>
+                Reflexionando en oración... 🕊️
+              </div>
+            ) : null}
+          </div>
+
+          <form onSubmit={handleSend} style={{ padding: '12px', borderTop: '1px solid #f3d0d9', display: 'flex', gap: '8px', background: '#fff' }}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Escribí lo que sentís..."
+              style={{
+                flex: 1,
+                padding: '10px 14px',
+                borderRadius: '999px',
+                border: '1px solid rgba(154, 43, 75, 0.3)',
+                outline: 'none',
+                fontSize: '0.9rem'
+              }}
+            />
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              style={{
+                background: '#9a2b4b',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '999px',
+                padding: '10px 16px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Enviar
+            </button>
+          </form>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -250,16 +280,6 @@ export default function InviteClient({
       countdown: getCountdownParts(publicInvitation.unlockAtArgentina)
     };
   }, [now, publicInvitation, isPreview]);
-
-  const unlockStatus = useMemo(() => {
-    const source = payload?.invitation ?? publicInvitation;
-    const unlockDate = new Date(source.unlockAtArgentina);
-
-    return {
-      unlocked: isPreview || now >= unlockDate.getTime(),
-      localFormatted: formatLocalDate(source.unlockAtArgentina)
-    };
-  }, [now, payload, publicInvitation, isPreview]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -325,14 +345,14 @@ export default function InviteClient({
   const displayName = publicInvitation.nickname || 'Pau';
 
   return (
-    <main className="page-shell">
+    <main className="page-shell" style={{ paddingBottom: payload ? '80px' : '32px' }}>
       {isPreview ? (
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
           <span className="preview-pill">👁️ MODO CREADOR ACTIVO</span>
         </div>
       ) : null}
 
-      {/* Seccion Teaser */}
+      {/* Sección Teaser */}
       <section className="hero-card teaser-card">
         <p className="eyebrow">Un llamado en el momento justo</p>
         <h1>Querida {displayName}, Dios te llama a servir ✨</h1>
@@ -405,145 +425,138 @@ export default function InviteClient({
 
       {/* Contenido de la Invitación */}
       {payload ? (
-        <section className="invitation-layout">
-          <article className="invitation-card">
-            <div className="invitation-header">
-              <p className="eyebrow">Llamado al Servicio 2026</p>
-              <h2>{payload.invitation.title}</h2>
-              <blockquote>{payload.invitation.verse}</blockquote>
-              <p className="verse-ref">{payload.invitation.verseRef}</p>
-            </div>
-
-            {/* Narrador de Carta por Voz */}
-            <AudioNarrator text={payload.content.intro.join(' ')} />
-
-            <div className="welcome-box">
-              <p className="welcome-label">Llamada a entregar el corazón:</p>
-              <p className="welcome-name">{payload.invitation.nombre}</p>
-            </div>
-
-            {payload.content.intro.map((paragraph, index) => (
-              <p key={index} className="body-copy">
-                {paragraph}
-              </p>
-            ))}
-
-            {/* Video de The Chosen */}
-            {payload.content.videoUrl ? (
-              <div style={{ marginTop: '28px', marginBottom: '28px', textAlign: 'center' }}>
-                <p className="eyebrow" style={{ marginBottom: '12px' }}>🎬 Reflexión: ¿Quieres seguirme?</p>
-                <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '18px', border: '1px solid #f3d0d9' }}>
-                  <iframe
-                    src={payload.content.videoUrl}
-                    title="¿Quieres seguirme? (The Chosen Escena)"
-                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
+        <>
+          <section className="invitation-layout">
+            <article className="invitation-card">
+              <div className="invitation-header">
+                <p className="eyebrow">Llamado al Servicio 2026</p>
+                <h2>{payload.invitation.title}</h2>
+                <blockquote>{payload.invitation.verse}</blockquote>
+                <p className="verse-ref">{payload.invitation.verseRef}</p>
               </div>
-            ) : null}
 
-            <section className="content-section">
-              <h3>Objetivos del Servicio</h3>
-              <ul>
-                {payload.content.objetivos.map((item, index) => (
-                  <li key={index}>{item}</li>
+              <div className="welcome-box">
+                <p className="welcome-label">Llamada a entregar el corazón:</p>
+                <p className="welcome-name">{payload.invitation.nombre}</p>
+              </div>
+
+              {payload.content.intro.map((paragraph, index) => (
+                <p key={index} className="body-copy">
+                  {paragraph}
+                </p>
+              ))}
+
+              {/* Video de The Chosen */}
+              {payload.content.videoUrl ? (
+                <div style={{ marginTop: '28px', marginBottom: '28px', textAlign: 'center' }}>
+                  <p className="eyebrow" style={{ marginBottom: '12px' }}>🎬 Reflexión: ¿Quieres seguirme?</p>
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '18px', border: '1px solid #f3d0d9' }}>
+                    <iframe
+                      src={payload.content.videoUrl}
+                      title="¿Quieres seguirme? (The Chosen Escena)"
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              <section className="content-section">
+                <h3>Objetivos del Servicio</h3>
+                <ul>
+                  {payload.content.objetivos.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className="content-section">
+                <h3>Actividades del ÁREA DE COMUNIDAD</h3>
+                <ul>
+                  {payload.content.actividades.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+
+              {payload.content.bloques.map((bloque, index) => (
+                <section key={index} className="content-block">
+                  <h3>{bloque.titulo}</h3>
+                  {bloque.lema ? <p className="block-quote">{bloque.lema}</p> : null}
+                  {bloque.intro ? <p className="body-copy">{bloque.intro}</p> : null}
+                  {bloque.preguntas?.length ? (
+                    <ul>
+                      {bloque.preguntas.map((item, pIndex) => (
+                        <li key={pIndex}>{item}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {bloque.nota ? <p className="note-box">{bloque.nota}</p> : null}
+                  {bloque.oracion?.length ? (
+                    <div className="prayer-box">
+                      {bloque.oracion.map((line, oIndex) => (
+                        <p key={oIndex}>{line}</p>
+                      ))}
+                    </div>
+                  ) : null}
+                </section>
+              ))}
+
+              <section className="content-section final-prayer">
+                {payload.content.cierre.map((line, index) => (
+                  <p key={index} className={index === 0 ? 'closing-title' : 'body-copy'}>
+                    {line}
+                  </p>
                 ))}
-              </ul>
-            </section>
 
-            <section className="content-section">
-              <h3>Actividades del ÁREA DE COMUNIDAD</h3>
-              <ul>
-                {payload.content.actividades.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            </section>
-
-            {payload.content.bloques.map((bloque, index) => (
-              <section key={index} className="content-block">
-                <h3>{bloque.titulo}</h3>
-                {bloque.lema ? <p className="block-quote">{bloque.lema}</p> : null}
-                {bloque.intro ? <p className="body-copy">{bloque.intro}</p> : null}
-                {bloque.preguntas?.length ? (
-                  <ul>
-                    {bloque.preguntas.map((item, pIndex) => (
-                      <li key={pIndex}>{item}</li>
-                    ))}
-                  </ul>
-                ) : null}
-                {bloque.nota ? <p className="note-box">{bloque.nota}</p> : null}
-                {bloque.oracion?.length ? (
-                  <div className="prayer-box">
-                    {bloque.oracion.map((line, oIndex) => (
-                      <p key={oIndex}>{line}</p>
+                {/* Botones Directos de WhatsApp a los Animadores */}
+                {payload.content.animadores?.length ? (
+                  <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {payload.content.animadores.map((animador) => (
+                      <a
+                        key={animador.nombre}
+                        href={animador.waLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="action-button"
+                        style={{ background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', textDecoration: 'none', minWidth: '220px' }}
+                      >
+                        💬 Hablar con {animador.nombre}
+                      </a>
                     ))}
                   </div>
                 ) : null}
               </section>
-            ))}
+            </article>
 
-            {/* Asistente de Discernimiento Ignaciano (Gemini) */}
-            <DiscernmentAssistant />
-
-            <section className="content-section final-prayer">
-              {payload.content.cierre.map((line, index) => (
-                <p key={index} className={index === 0 ? 'closing-title' : 'body-copy'}>
-                  {line}
+            {/* Panel Lateral */}
+            <aside className="side-panel">
+              <div className="side-card sticky-card">
+                <p className="featured-quote">
+                  “Nos hiciste, Señor, para ti, y nuestro corazón está inquieto hasta que descanse en ti.”
                 </p>
-              ))}
+                <p className="featured-quote" style={{ fontSize: '0.95rem', color: '#701c35' }}>
+                  “Toda vocación es un don de Dios. Él llama en el momento justo.”
+                </p>
+              </div>
 
-              {/* Botones Directos de WhatsApp a los Animadores */}
-              {payload.content.animadores?.length ? (
-                <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  {payload.content.animadores.map((animador) => (
-                    <a
-                      key={animador.nombre}
-                      href={animador.waLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="action-button"
-                      style={{ background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', textDecoration: 'none' }}
-                    >
-                      💬 Hablar con {animador.nombre}
-                    </a>
-                  ))}
-                </div>
-              ) : null}
-            </section>
-          </article>
+              <div className="side-card actions-card">
+                <button
+                  type="button"
+                  className="action-button"
+                  disabled={downloadLoading}
+                  onClick={handleDownloadPdf}
+                >
+                  {downloadLoading ? 'Generando PDF...' : '📄 Descargar Documento (PDF)'}
+                </button>
+              </div>
+            </aside>
+          </section>
 
-          {/* Panel Lateral */}
-          <aside className="side-panel">
-            <div className="side-card sticky-card">
-              <p className="featured-quote">
-                “Nos hiciste, Señor, para ti, y nuestro corazón está inquieto hasta que descanse en ti.”
-              </p>
-              <p className="featured-quote" style={{ fontSize: '0.95rem', color: '#701c35' }}>
-                “Toda vocación es un don de Dios. Él llama en el momento justo.”
-              </p>
-            </div>
-
-            <div className="side-card actions-card">
-              <button
-                type="button"
-                className="action-button"
-                disabled={downloadLoading}
-                onClick={handleDownloadPdf}
-              >
-                {downloadLoading ? 'Generando PDF...' : '📄 Descargar Documento (PDF)'}
-              </button>
-
-              {payload.invitation.meetUrl ? (
-                <a className="action-button secondary" href={payload.invitation.meetUrl} target="_blank" rel="noreferrer">
-                  🎥 Encuentro de Discernimiento
-                </a>
-              ) : null}
-            </div>
-          </aside>
-        </section>
+          {/* Widget Flotante de IA de Preguntas */}
+          <FloatingDiscernmentWidget />
+        </>
       ) : null}
     </main>
   );
