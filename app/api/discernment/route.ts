@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export const runtime = 'nodejs'; // Forzamos el entorno Node.js estándar en Netlify
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!apiKey) {
       console.error("Falta GEMINI_API_KEY");
       return NextResponse.json(
-        { reply: "Error de configuración: La clave GEMINI_API_KEY no fue detectada por el servidor de Netlify. Revisa las Environment Variables." },
+        { reply: "Error de configuración: La clave GEMINI_API_KEY no fue detectada en Netlify." },
         { status: 500 }
       );
     }
@@ -19,7 +19,9 @@ export async function POST(request: NextRequest) {
     const userMessage = body.message || "Hola";
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    // Usamos 'gemini-1.5-flash-latest' o 'gemini-1.5-pro'
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
     const systemInstruction = `
     Sos un acompañante espiritual virtual inspirado en la pedagogía de San Ignacio de Loyola y la tradición ignaciana de discernimiento.
@@ -38,10 +40,9 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Error detallado en Gemini Route:", error);
     
-    // Devolvemos el error real para ver qué dice Netlify
     return NextResponse.json(
       { 
-        reply: `Detalle técnico del error: ${error?.message || 'Error desconocido al invocar Gemini'}. Por favor avísale a Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783).` 
+        reply: `Detalle técnico del error: ${error?.message || 'Error al invocar Gemini'}. Por favor avísale a Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783).` 
       },
       { status: 500 }
     );
