@@ -2,7 +2,6 @@
 const nextConfig = {
   productionBrowserSourceMaps: true,
   eslint: { ignoreDuringBuilds: true },
-  output: 'standalone',
   experimental: {
     typedRoutes: false
   }
