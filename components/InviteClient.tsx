@@ -45,6 +45,163 @@ type PublicInvitation = {
   unlockAtArgentinaFormatted: string;
 };
 
+/* --- Componente Auxiliar: Narrador de Carta por Voz --- */
+function AudioNarrator({ text }: { text: string }) {
+  const [speaking, setSpeaking] = useState(false);
+
+  function toggleSpeech() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      alert('Tu navegador no soporta la función de voz.');
+      return;
+    }
+
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+    } else {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-AR';
+      utterance.rate = 0.9; // Tono pausado y cálido
+
+      utterance.onend = () => setSpeaking(false);
+      utterance.onerror = () => setSpeaking(false);
+
+      window.speechSynthesis.speak(utterance);
+      setSpeaking(true);
+    }
+  }
+
+  return (
+    <div style={{ textAlign: 'center', margin: '20px 0' }}>
+      <button
+        type="button"
+        onClick={toggleSpeech}
+        className="action-button secondary"
+        style={{ fontSize: '0.9rem', padding: '10px 20px' }}
+      >
+        {speaking ? '⏸️ Pausar Narración' : '🎙️ Escuchar la Carta Narrada por IA'}
+      </button>
+    </div>
+  );
+}
+
+/* --- Componente Auxiliar: Acompañante de Discernimiento (Gemini) --- */
+function DiscernmentAssistant() {
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'model'; text: string }>>([
+    {
+      role: 'model',
+      text: '¡Hola, Pau! 🕊️ Soy tu espacio de acompañamiento espiritual. Si sentís alguna duda, inquietud o alegría sobre este llamado al servicio, podés escribirme para que lo reflexionemos juntos a la luz de San Ignacio.'
+    }
+  ]);
+
+  async function handleSend(e: React.FormEvent) {
+    e.preventDefault();
+    if (!input.trim() || loading) return;
+
+    const userMessage = input.trim();
+    setInput('');
+    setMessages((prev) => [...prev, { role: 'user', text: userMessage }]);
+    setLoading(true);
+
+    try {
+      const historyFormatted = messages.map((m) => ({
+        role: m.role,
+        parts: [{ text: m.text }]
+      }));
+
+      const res = await fetch('/api/discernment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage, history: historyFormatted })
+      });
+
+      const data = await res.json();
+      setMessages((prev) => [...prev, { role: 'model', text: data.reply }]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'model',
+          text: 'Hubo un inconveniente al conectar. No dudes en consultarlo en oración o charlarlo directamente con Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783) 💕.'
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="content-section" style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1px solid var(--line)' }}>
+      <h3 style={{ color: '#701c35', textAlign: 'center' }}>🕊️ Espacio de Discernimiento Ignaciano</h3>
+      <p className="body-copy" style={{ fontStyle: 'italic', fontSize: '0.95rem', textAlign: 'center', marginBottom: '18px' }}>
+        “Examinar las mociones del alma con paz, libertad y oración”
+      </p>
+
+      <div
+        style={{
+          background: '#ffffff',
+          borderRadius: '20px',
+          padding: '18px',
+          border: '1px solid #f3d0d9',
+          maxHeight: '350px',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+          marginBottom: '14px',
+          boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.03)'
+        }}
+      >
+        {messages.map((m, i) => (
+          <div
+            key={i}
+            style={{
+              alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+              background: m.role === 'user' ? '#9a2b4b' : '#fbebf0',
+              color: m.role === 'user' ? '#ffffff' : '#3b232a',
+              padding: '12px 16px',
+              borderRadius: '16px',
+              maxWidth: '85%',
+              fontSize: '0.96rem',
+              lineHeight: '1.5'
+            }}
+          >
+            {m.text}
+          </div>
+        ))}
+        {loading ? (
+          <div style={{ alignSelf: 'flex-start', background: '#fbebf0', padding: '10px 14px', borderRadius: '16px', fontStyle: 'italic', color: '#7d5a65', fontSize: '0.9rem' }}>
+            Reflexionando en oración con Gemini... 🕊️
+          </div>
+        ) : null}
+      </div>
+
+      <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px' }}>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Escribí lo que sentís o tus dudas sobre el servicio..."
+          style={{
+            flex: 1,
+            padding: '12px 18px',
+            borderRadius: '999px',
+            border: '1px solid rgba(154, 43, 75, 0.25)',
+            outline: 'none',
+            fontSize: '0.95rem'
+          }}
+        />
+        <button type="submit" className="action-button" disabled={loading || !input.trim()}>
+          Preguntar
+        </button>
+      </form>
+    </div>
+  );
+}
+
 function getCountdownParts(targetDate: string) {
   const diff = new Date(targetDate).getTime() - Date.now();
 
@@ -257,6 +414,9 @@ export default function InviteClient({
               <p className="verse-ref">{payload.invitation.verseRef}</p>
             </div>
 
+            {/* Narrador de Carta por Voz */}
+            <AudioNarrator text={payload.content.intro.join(' ')} />
+
             <div className="welcome-box">
               <p className="welcome-label">Llamada a entregar el corazón:</p>
               <p className="welcome-name">{payload.invitation.nombre}</p>
@@ -324,6 +484,9 @@ export default function InviteClient({
                 ) : null}
               </section>
             ))}
+
+            {/* Asistente de Discernimiento Ignaciano (Gemini) */}
+            <DiscernmentAssistant />
 
             <section className="content-section final-prayer">
               {payload.content.cierre.map((line, index) => (
