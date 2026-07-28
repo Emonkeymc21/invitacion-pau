@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
 export async function POST(request: NextRequest) {
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      console.error("GEMINI_API_KEY no está definida en las variables de entorno.");
+      return NextResponse.json(
+        { reply: "Pau, aún falta configurar la clave de conexión (GEMINI_API_KEY) en el servidor. Recordá que podés abrir tu corazón y charlarlo directamente con Emma (+54 9 261 578-8430) o Carla (+54 9 261 241-4783)." },
+        { status: 500 }
+      );
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const { message } = await request.json();
 
     const systemInstruction = `
@@ -18,12 +27,13 @@ export async function POST(request: NextRequest) {
     4. SIEMPRE en tus respuestas (o como cierre cálido), aconsejale con mucha fraternidad que comparta sus sentimientos, dudas, alegrías o mociones con sus animadores del Área de Comunidad: Emma (+54 9 261 578-8430) y Carla (+54 9 261 241-4783), recordándole que el servicio se camina en comunidad.
     `;
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      systemInstruction: systemInstruction
-    });
+    // Inicializamos el modelo de forma ultra-compatible
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const result = await model.generateContent(message);
+    // Enviamos el contexto y el mensaje juntos
+    const prompt = `${systemInstruction}\n\nMensaje o duda de Pau:\n"${message}"`;
+
+    const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
